@@ -1,0 +1,79 @@
+x="a6nqw1";#neptun kód
+z=charToRaw(iconv(x, "latin1", "UTF-8"))
+for (i in 1:6) v=paste("0x",z,sep="")
+e=strtoi(v)
+ax=e[1];ay=e[2];az=e[3];av=e[4];ss=sum(strtoi(v))+24
+cat("ax=",ax,"\n")
+cat("ay=",ay,"\n")
+cat("az=",az,"\n")
+cat("av=",av,"\n")
+cat("ss=",ss,"\n")
+ar=c( "FB","AAPL","AMZN","GOOG","NFLX","TSLA")
+ai=ss-6*floor(ss/6)
+ev=2022-(ss-10*floor(ss/10))
+cat("ev=",ev,"\n")
+cat("reszveny=",ar[ai+1],"\n")
+set.seed(ss)
+nx=700
+v=matrix(c(ax,abs(ax-ay),abs(ax-ay),ay),2)
+w=chol(v)
+z1=sqrt(-2*log(runif(nx)))*sin(runif(nx)*2*pi)
+z2=sqrt(-2*log(runif(nx)))*cos(runif(nx)*2*pi)
+zm=matrix(c(z1,z2),ncol=2)
+zn=5*zm%*%w
+summary(zn)
+cor(zn)
+install.packages("MASS")
+n <- 1000
+rho <- -0.7
+lambda <- 1
+Sigma <- matrix(c(1, rho, rho, 1), 2, 2)
+L <- chol(Sigma)
+Z <- matrix(rnorm(2*n), ncol = 2)
+Z_correlated <- Z %*% L
+X <- -log(1 - pnorm(Z_correlated)) / lambda
+plot(X, main = paste("Exponenciális eloszlású minta korrelációval:", rho), xlab = "X1", ylab = "X2")
+set.seed(ss+37)
+
+library(moments)
+set.seed(ss)
+nx=700
+v=matrix(c(ax,abs(ax-ay),abs(ax-ay),ay),2)
+w=chol(v)
+z1=sqrt(-2*log(runif(nx)))*sin(runif(nx)*2*pi)
+z2=sqrt(-2*log(runif(nx)))*cos(runif(nx)*2*pi)
+zm=matrix(c(z1,z2),ncol=2)
+zn=5*zm%*%w
+library(LSMRealOptions)
+set.seed(ss+37)
+n <- 1
+t <- 500/365
+mu <- ax
+sigma <- (ax+az)/(ax+ay+az)
+S0 <- 200
+dt <- 1/365
+gbm <- GBM_simulate(n, t, mu, sigma, S0, dt);
+plot(gbm, type='l')
+summary(gbm)
+skewness(gbm)
+kurtosis(gbm)
+set.seed(ss+17)
+lambda <- 2
+time_interval <- 1000
+arrival_times <- cumsum(rexp(time_interval, lambda))
+arrival_times <- arrival_times[arrival_times <= time_interval]
+plot(arrival_times, 1:length(arrival_times), type="s", xlab="Idő", ylab="Események száma", main="Poisson folyamat")
+expected_arrivals <- lambda * time_interval
+print(paste("A bekövetkezések várható száma: ", expected_arrivals))
+
+details <- read.csv("C:/Users/au084503/Desktop/AMZN.csv")
+logreturn = c()
+zaro <- details$Close
+for (i in 1:length(zaro)-1){
+  logreturn[i] = abs(log(zaro[i+1]/zaro[i]))
+}
+hist(logreturn, main="záró árak változása")
+plot(logreturn)
+ma_data <- stats::filter(details$Close, rep(1/5, 5), sides=1)
+elorejelzett_ma <- ma_data[length(ma_data)]
+print(elorejelzett_ma)
