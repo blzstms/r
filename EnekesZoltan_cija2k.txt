@@ -1,0 +1,103 @@
+x="cija2k";#neptun kód
+z=charToRaw(iconv(x, "latin1", "UTF-8"))
+for (i in 1:6) v=paste("0x",z,sep="")
+e=strtoi(v)
+ax=e[1];ay=e[2];az=e[3];av=e[4];ss=sum(strtoi(v))+24
+cat("ax=",ax,"\n")
+cat("ay=",ay,"\n")
+cat("az=",az,"\n")
+cat("av=",av,"\n")
+cat("ss=",ss,"\n")
+ar=c( "FB","AAPL","AMZN","GOOG","NFLX","TSLA")
+ai=ss-6*floor(ss/6)
+ev=2022-(ss-10*floor(ss/10))
+cat("ev=",ev,"\n")
+cat("reszveny=",ar[ai+1],"\n")
+
+set.seed(ss)
+nx=700
+v=matrix(c(ax,abs(ax-ay),abs(ax-ay),ay),2)
+w=chol(v)
+z1=sqrt(-2*log(runif(nx)))*sin(runif(nx)*2*pi)
+z2=sqrt(-2*log(runif(nx)))*cos(runif(nx)*2*pi)
+zm=matrix(c(z1,z2),ncol=2)
+zn=5*zm%*%w
+
+summary(zn)
+
+install.packages("ggpubr")
+library(ggpubr)
+
+ggdensity(zn[,1], 
+          main = "Sűrűségdiagram",
+          xlab = "Értékek")
+
+ggdensity(zn[,2], 
+          main = "Sűrűségdiagram",
+          xlab = "Értékek")
+qqPlot(zn)
+library("car")
+qqPlot(zn)
+chisq.test(abs(zn))
+
+gbm_ciklus <- function(nsim = 100, t = 500, mu = ax, sigma = (ax+az)/(ax+ay+az), S0 = 100, dt = 1./365) {
+  gbm <- matrix(ncol = nsim, nrow = t)
+  for (simu in 1:nsim) {
+    gbm[1, simu] <- S0
+    for (day in 2:t) {
+      epsilon <- rnorm(1)
+      dt = 1 / 365
+      gbm[day, simu] <- gbm[(day-1), simu] * exp((mu - sigma * sigma / 2) * dt + sigma * epsilon * sqrt(dt))
+    }
+  }
+  return(gbm)
+}
+
+nsim <- 50
+t <- 500
+mu <- ax
+sigma <- (ax+az)/(ax+ay+az)
+S0 <- 100
+set.seed(ss+37)
+gbm <- gbm_ciklus(nsim, t, mu, sigma, S0)
+summary(gbm)
+
+brown <- function(){
+	set.seed(ss+37)
+	x <- y <- x.new <- y.new <- x.new.p <- y.new.p <- vector()
+	for(i in 1:500){
+		x <- rnorm(1, ax, (ax+az)/(ax+ay+az))
+		y <- rnorm(1, ax, (ax+az)/(ax+ay+az))
+    		x.new <- c(x.new, x)
+    		y.new <- c(y.new, y)
+		x.new.p <- cumsum(x.new)
+		y.new.p <- cumsum(y.new)
+		plot(x.new.p, y.new.p, type="b", main=paste("Brown folyamat\nIdo =", i,sep=""),
+		xlab="x koordinatak", ylab="y koordinatak", col=c(rep("gray", i-1), "red"), pch=c(rep(20,i-1),1))
+    }
+}
+ 
+brown()
+ 
+poisson <- function(){
+	set.seed(ss+17)
+	x <- y <- x.new <- y.new <- x.new.p <- y.new.p <- vector()
+	for(i in 1:1000){
+		x <- rpois(1, (ax+az)/(ax+ay+az))
+		y <- rpois(1, (ax+az)/(ax+ay+az))
+    		x.new <- c(x.new, x)
+    		y.new <- c(y.new, y)
+		x.new.p <- cumsum(x.new)
+		y.new.p <- cumsum(y.new)
+		plot(x.new.p, y.new.p, type="b", main=paste("Poisson folyamat\nIdo =", i,sep=""),
+		xlab="x koordinatak", ylab="y koordinatak", col=c(rep("gray", i-1), "red"), pch=c(rep(20,i-1),1))
+	}
+    		poisson_g <- matrix(c(x.new.p,y.new.p), ncol = 2)
+		return(poisson_g)
+}
+ 
+poisson_generalt <- poisson()
+summary(poisson_generalt)
+
+
+
